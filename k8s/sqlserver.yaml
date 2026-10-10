@@ -1,0 +1,66 @@
+# SQL Server (lab): ১টি pod + ClusterIP Service "mssql"।
+# আগে secret বানাও (password কখনো Git-এ commit করবে না):
+#   kubectl create secret generic mssql-secret --from-literal=MSSQL_SA_PASSWORD='YourStr0ng!Pass'
+#
+# ⚠️ ডেটা emptyDir-এ থাকে — pod মুছলে/অন্য node-এ গেলে ডেটা হারাবে।
+#    স্থায়ী করতে emptyDir-এর জায়গায় PersistentVolumeClaim (StorageClass সহ) ব্যবহার করো।
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mssql
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mssql
+  template:
+    metadata:
+      labels:
+        app: mssql
+    spec:
+      containers:
+        - name: mssql
+          image: mcr.microsoft.com/mssql/server:2022-latest
+          ports:
+            - containerPort: 1433
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Developer
+            - name: MSSQL_SA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mssql-secret
+                  key: MSSQL_SA_PASSWORD
+          readinessProbe:
+            tcpSocket:
+              port: 1433
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              memory: 3Gi
+          volumeMounts:
+            - name: data
+              mountPath: /var/opt/mssql
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql
+spec:
+  type: ClusterIP
+  selector:
+    app: mssql
+  ports:
+    - port: 1433
+      targetPort: 1433

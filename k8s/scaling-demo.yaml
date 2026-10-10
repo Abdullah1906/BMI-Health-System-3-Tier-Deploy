@@ -1,0 +1,77 @@
+# API Deployment + Service। HPA এই Deployment-কেই scale করে (hpa.yaml)।
+# YOUR_USERNAME নিজের Docker Hub username দিয়ে বদলাও।
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scaling-demo-api
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: scaling-demo-api
+
+  template:
+    metadata:
+      labels:
+        app: scaling-demo-api
+
+    spec:
+      containers:
+        - name: api
+          image: YOUR_USERNAME/scaling-demo-api:1.0
+
+          ports:
+            - containerPort: 8080
+
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            # $(MSSQL_SA_PASSWORD) নিচের লাইনে আগে define করা env থেকে Kubernetes নিজে বসায়;
+            # তাই এই env দুটির ক্রম বদলাবে না।
+            - name: MSSQL_SA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mssql-secret
+                  key: MSSQL_SA_PASSWORD
+            - name: ConnectionStrings__BmiDb
+              value: "Server=mssql,1433;Database=BmiDb;User Id=sa;Password=$(MSSQL_SA_PASSWORD);Encrypt=True;TrustServerCertificate=True"
+
+          # Liveness: process জীবিত কি না (database ছোঁয় না)।
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          # Readiness: database পৌঁছানো যায় ও schema আছে — না হলে pod Service-এ traffic পায় না।
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            periodSeconds: 5
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+
+            limits:
+              cpu: "1"
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scaling-demo-service
+
+spec:
+  type: ClusterIP
+
+  selector:
+    app: scaling-demo-api
+
+  ports:
+    - port: 80
+      targetPort: 8080
