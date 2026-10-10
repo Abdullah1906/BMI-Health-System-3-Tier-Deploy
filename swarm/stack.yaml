@@ -1,0 +1,72 @@
+# Step 5 — Docker Swarm stack: SQL Server (১টি) + API (৩টি) + web/Angular (২টি)।
+#
+# Deploy করার আগে manager shell-এ password export করতে হবে (না দিলে deploy ব্যর্থ হবে):
+#   export MSSQL_SA_PASSWORD='YourStr0ng!Pass'
+#   docker stack deploy --with-registry-auth -c swarm/stack.yaml scalingdemo
+#
+# YOUR_USERNAME নিজের Docker Hub username দিয়ে বদলাও।
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:?export MSSQL_SA_PASSWORD before deploying}"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    networks:
+      - app-net
+    deploy:
+      replicas: 1
+      # Volume local, তাই database সবসময় একই node-এ চলতে হবে।
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+
+  api:
+    image: YOUR_USERNAME/scaling-demo-api:1.0
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__BmiDb: "Server=sqlserver,1433;Database=BmiDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};Encrypt=True;TrustServerCertificate=True"
+    networks:
+      - app-net
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  # nginx-এর default upstream `server api:8080;` — Swarm-এ "api" নামটি service VIP,
+  # যা task-গুলোর মধ্যে নিজেই load balance করে।
+  web:
+    image: YOUR_USERNAME/scaling-demo-web:1.0
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: ingress
+    networks:
+      - app-net
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+
+volumes:
+  mssql-data:
+
+networks:
+  app-net:
+    driver: overlay
