@@ -1,0 +1,56 @@
+<section class="card" aria-labelledby="form-title">
+  <h2 id="form-title">Calculate your BMI</h2>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="field">
+      <label for="name">Nickname <span class="optional">(optional)</span></label>
+      <input id="name" type="text" formControlName="name" autocomplete="off" maxlength="100"
+             [attr.aria-invalid]="errorOf('name') ? true : null" />
+      @if (errorOf('name'); as message) {
+        <p class="field-error" role="alert">{{ message }}</p>
+      }
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="age">Age</label>
+        <input id="age" type="number" formControlName="age" inputmode="numeric" min="18" max="120" step="1"
+               [attr.aria-invalid]="errorOf('age') ? true : null" />
+        @if (errorOf('age'); as message) {
+          <p class="field-error" role="alert">{{ message }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="height">Height (cm)</label>
+        <input id="height" type="number" formControlName="heightCm" inputmode="decimal" min="50" max="260" step="0.1"
+               [attr.aria-invalid]="errorOf('heightCm') ? true : null" />
+        @if (errorOf('heightCm'); as message) {
+          <p class="field-error" role="alert">{{ message }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="weight">Weight (kg)</label>
+        <input id="weight" type="number" formControlName="weightKg" inputmode="decimal" min="10" max="500" step="0.1"
+               [attr.aria-invalid]="errorOf('weightKg') ? true : null" />
+        @if (errorOf('weightKg'); as message) {
+          <p class="field-error" role="alert">{{ message }}</p>
+        }
+      </div>
+    </div>
+
+    @if (store.formError(); as message) {
+      <p class="banner banner-error" role="alert">{{ message }}</p>
+    }
+
+    <div class="actions">
+      <button type="submit" class="btn btn-primary" [disabled]="store.submitting()">
+        {{ store.submitting() ? 'Calculating…' : 'Calculate' }}
+      </button>
+      <button type="button" class="btn" (click)="reset()">Reset</button>
+    </div>
+
+    <p class="hint">Results are saved to the shared history shown on this page.</p>
+  </form>
+</section>

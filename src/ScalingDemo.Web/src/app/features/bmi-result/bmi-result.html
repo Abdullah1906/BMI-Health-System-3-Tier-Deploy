@@ -1,0 +1,41 @@
+<section class="card result" aria-labelledby="result-title" aria-live="polite">
+  <h2 id="result-title">Your result</h2>
+
+  <div class="headline">
+    <p class="bmi-value">{{ result().record.bmi | number: '1.1-1' }}</p>
+    <p [class]="'badge ' + meta[result().record.category].cssClass">
+      {{ result().record.category }}
+    </p>
+  </div>
+
+  <div class="gauge" role="img"
+       [attr.aria-label]="'BMI ' + result().record.bmi + ' on a scale from ' + gauge.min + ' to ' + gauge.max">
+    <div class="gauge-bar">
+      @for (segment of gauge.segments; track segment.category) {
+        <span [class]="'segment ' + meta[segment.category].cssClass"
+              [style.flex-grow]="segmentFlex(segment.from, segment.to)"></span>
+      }
+      <span class="marker" [style.left]="markerLeft()"></span>
+    </div>
+    <div class="gauge-ticks" aria-hidden="true">
+      @for (tick of gauge.ticks; track tick) {
+        <span [style.left.%]="gaugePercent(tick)">{{ tick }}</span>
+      }
+    </div>
+  </div>
+
+  <dl class="facts">
+    <div>
+      <dt>Healthy weight for {{ result().record.heightCm | number: '1.0-1' }} cm</dt>
+      <dd>
+        {{ result().healthyWeightMinKg | number: '1.1-1' }} – {{ result().healthyWeightMaxKg | number: '1.1-1' }} kg
+      </dd>
+    </div>
+    <div>
+      <dt>Your category range</dt>
+      <dd>{{ meta[result().record.category].range }}</dd>
+    </div>
+  </dl>
+
+  <p class="advice">{{ result().advice }}</p>
+</section>

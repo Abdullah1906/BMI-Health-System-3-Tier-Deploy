@@ -1,0 +1,34 @@
+<header class="site-header">
+  <div class="page">
+    <h1>BMI Health Calculator</h1>
+    <p class="subtitle">Check your body mass index and see how it compares with other results.</p>
+  </div>
+</header>
+
+<main class="page">
+  <div class="layout">
+    <div class="column">
+      <app-bmi-form />
+      @if (store.latest(); as result) {
+        <app-bmi-result [result]="result" />
+      }
+    </div>
+
+    <div class="column">
+      <app-bmi-stats />
+      <app-bmi-history />
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="page">
+    <p>
+      BMI is a general screening measure and not a medical diagnosis. Categories shown are the adult WHO ranges;
+      speak with a healthcare professional about your health.
+    </p>
+    @if (server.servedBy(); as host) {
+      <p class="served-by">Last response served by <code>{{ host }}</code></p>
+    }
+  </div>
+</footer>

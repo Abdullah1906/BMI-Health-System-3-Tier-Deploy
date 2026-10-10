@@ -1,0 +1,30 @@
+<section class="card" aria-labelledby="stats-title">
+  <h2 id="stats-title">Community snapshot</h2>
+
+  @if (store.stats(); as stats) {
+    <div class="stat-tiles">
+      <div class="tile">
+        <p class="tile-value">{{ stats.total }}</p>
+        <p class="tile-label">Calculations</p>
+      </div>
+      <div class="tile">
+        <p class="tile-value">{{ stats.total ? (stats.averageBmi | number: '1.1-1') : '–' }}</p>
+        <p class="tile-label">Average BMI</p>
+      </div>
+    </div>
+
+    <ul class="bars">
+      @for (row of rows(); track row.category) {
+        <li>
+          <span class="bar-label">{{ row.category }}</span>
+          <span class="bar-track" aria-hidden="true">
+            <span [class]="'bar-fill ' + meta[row.category].cssClass" [style.width.%]="row.percent"></span>
+          </span>
+          <span class="bar-count">{{ row.count }}</span>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="muted">Loading…</p>
+  }
+</section>
