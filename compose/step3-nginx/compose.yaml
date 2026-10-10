@@ -1,0 +1,47 @@
+# Step 3 — Nginx load balancer: web container-ই entry point; backend তালিকা nginx/upstream.conf-এ।
+# Browser: http://localhost:8088
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-Lab_Passw0rd!}"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    restart: unless-stopped
+
+  api1: &api
+    image: scaling-demo-api:1.0
+    build:
+      context: ../../src/ScalingDemo.Api
+    environment:
+      ConnectionStrings__BmiDb: "Server=sqlserver,1433;Database=BmiDb;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Lab_Passw0rd!};Encrypt=True;TrustServerCertificate=True"
+    expose:
+      - "8080"
+    depends_on:
+      - sqlserver
+    restart: unless-stopped
+
+  api2:
+    <<: *api
+
+  api3:
+    <<: *api
+
+  web:
+    image: scaling-demo-web:1.0
+    build:
+      context: ../../src/ScalingDemo.Web
+    ports:
+      - "8088:80"
+    volumes:
+      # image-এর ভেতরের default (server api:8080;) এই ফাইল দিয়ে বদলে যায়।
+      - ./nginx/upstream.conf:/etc/nginx/upstream.conf:ro
+    depends_on:
+      - api1
+      - api2
+      - api3
+    restart: unless-stopped
+
+volumes:
+  mssql-data:

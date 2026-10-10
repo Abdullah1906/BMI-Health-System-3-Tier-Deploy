@@ -1,0 +1,41 @@
+# Step 2 — একই API image থেকে একাধিক replica।
+# Browser: http://localhost:4200
+#
+# Password না দিলে নিচের lab default ব্যবহার হবে। নিজের মান দিতে:
+#   MSSQL_SA_PASSWORD='YourStr0ng!Pass' docker compose up -d --build --scale api=3
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-Lab_Passw0rd!}"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    restart: unless-stopped
+
+  api:
+    image: scaling-demo-api:1.0
+    build:
+      context: ../../src/ScalingDemo.Api
+    environment:
+      ConnectionStrings__BmiDb: "Server=sqlserver,1433;Database=BmiDb;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Lab_Passw0rd!};Encrypt=True;TrustServerCertificate=True"
+    expose:
+      - "8080"
+    depends_on:
+      - sqlserver
+    restart: unless-stopped
+
+  # Angular UI + nginx। /api, /health, /instance, /cpu যায় "api" service-এ
+  # (nginx শুরুর সময় "api" নামের সব replica-র IP resolve করে)।
+  web:
+    image: scaling-demo-web:1.0
+    build:
+      context: ../../src/ScalingDemo.Web
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  mssql-data:
