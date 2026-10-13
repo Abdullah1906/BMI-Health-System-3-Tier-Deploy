@@ -15,9 +15,10 @@ aws ssm start-session --target <zabbix-server-instance-id> \
 
 # 2. রিপো ক্লোন করে রান করুন
 sudo -s
-git clone https://github.com/Abdullah1906/zabbix-monitoring-end-to-end.git
-cd zabbix-monitoring-end-to-end
-bash 01-zabbix-server/install-server.sh 'YourPassword'
+git clone https://github.com/Abdullah1906/BMI-Health-System-3-Tier-Deploy.git
+cd BMI-Health-System-3-Tier-Deploy
+bash monitoring/install-server.sh 'YourPassword'
+
 ```
 
 স্ক্রিপ্টটি সব ধাপ idempotent ভাবে সম্পন্ন করে — তাই বারবার রান করা নিরাপদ।
