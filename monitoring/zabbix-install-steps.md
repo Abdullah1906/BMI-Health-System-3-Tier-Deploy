@@ -269,6 +269,7 @@ sudo systemctl enable nginx
 sudo systemctl start nginx
 sudo systemctl status nginx --no-pager
 ```
+# Security group custom tcp 8080 0.0.0.0/0 need to open at instance (important)
 
 ## ওয়েব সেটআপ উইজার্ড
 
