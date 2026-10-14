@@ -90,6 +90,7 @@ zcat /usr/share/zabbix/sql-scripts/postgresql/server.sql.gz | sudo -u zabbix psq
 ```bash
 cp /etc/zabbix/zabbix_server.conf /etc/zabbix/zabbix_server.conf.bak
 ```
+### N.B: Cachsize need to change for agent-linux-direct
 
 পুরো ফাইলটি নিচের কনটেন্ট দিয়ে প্রতিস্থাপন করুন।  
 `YourPassword` এর জায়গায় আপনার আসল DB পাসওয়ার্ড বসান।
@@ -119,7 +120,7 @@ StartPollers=5
 StartTrappers=5
 StartPingers=1
 StartDiscoverers=1
-CacheSize=8M
+CacheSize=128M
 HistoryCacheSize=16M
 TrendCacheSize=4M
 
