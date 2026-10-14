@@ -33,7 +33,7 @@ fi
 
 # ── Arguments ─────────────────────────────────────────────────────────────────
 DB_PASSWORD="${1:?ERROR: DB password is required. Usage: sudo bash $0 <DB_PASSWORD>}"
-ZABBIX_VERSION="7.0"
+ZABBIX_VERSION="7.4"
 ZABBIX_REPO_DEB="https://repo.zabbix.com/zabbix/${ZABBIX_VERSION}/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest_${ZABBIX_VERSION}+ubuntu24.04_all.deb"
 
 echo "============================================================"
