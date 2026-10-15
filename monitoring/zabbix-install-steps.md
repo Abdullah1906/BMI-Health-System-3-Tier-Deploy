@@ -230,6 +230,8 @@ LogFileSize=0
 
 # Only localhost is allowed to poll (passive mode — server polls itself)
 Server=127.0.0.1
+# if have poxy server then add proxy server private id 
+# Server=127.0.0.1,10.0.131.29
 # ServerActive disabled — passive mode only
 
 Hostname=zabbix-server
