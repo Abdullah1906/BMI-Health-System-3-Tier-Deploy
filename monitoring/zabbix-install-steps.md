@@ -330,6 +330,57 @@ ss -tlnp | grep 8080                    # 8080 পোর্ট কে ব্য�
 # PHP-FPM সকেট না পাওয়া গেলে
 ls -la /var/run/php/zabbix.sock
 ```
+## problem hole krbe 
+```bash 
+আপনার Zabbix এখন কাজ করছে কারণ আমরা Nginx-এর ভুল document root ঠিক করেছি। শুরুতে মূল সমস্যা ছিল Nginx কোন directory থেকে Zabbix-এর frontend ফাইল খুঁজবে, সেটি ভুলভাবে configure করা ছিল।
+চলুন সহজভাবে পুরো বিষয়টা বুঝি।
+১. সমস্যাটা কোথায় ছিল?
+আপনার /etc/nginx/conf.d/zabbix.conf ফাইলে প্রথমে ছিল:
+root /usr/share/zabbix/ui/ui;
+
+
+কিন্তু আপনার সার্ভারের প্রকৃত directory structure ছিল:
+/usr/share/zabbix/
+
+ui/
+
+index.php
+
+setup.php
+
+assets/
+
+
+
+
+অর্থাৎ, ui directory-টি দুইবার লেখা হয়েছিল। Nginx খুঁজছিল:
+/usr/share/zabbix/ui/ui/index.php
+
+
+কিন্তু ফাইলটি ছিল:
+/usr/share/zabbix/ui/index.php
+
+
+তাই Nginx সঠিক frontend ফাইল খুঁজে পাচ্ছিল না।
+২. কী পরিবর্তন করায় কাজ করেছে?
+আপনি configuration-এ পরিবর্তন করে লিখেছেন:
+root /usr/share/zabbix/ui;
+
+
+এখন Nginx সঠিক directory থেকে ফাইল খুঁজছে।
+এরপর এই command চালিয়েছেন:
+sudo nginx -t && sudo systemctl reload nginx
+
+
+এখানে:
+- nginx -t — configuration-এর syntax ঠিক আছে কি না পরীক্ষা করেছে।
+- systemctl reload nginx — নতুন configuration চালু করেছে, সার্ভার বন্ধ না করেই।
+```
+
+## Browser search 
+```bash 
+http://100.48.96.115:8080/setup.php
+```
 
 ---
 
