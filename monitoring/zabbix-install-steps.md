@@ -381,7 +381,7 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ## Browser search 
 ```bash 
-http://100.48.96.115:8080/setup.php
+http://<Public ip of zabbix server>:8080/setup.php
 ```
 
 ---
