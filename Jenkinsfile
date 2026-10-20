@@ -17,6 +17,15 @@ pipeline {
         API_IMAGE = 'bmi-health-api'
         WEB_IMAGE = 'bmi-health-web'
     }
+    environment {
+        API_PROJECT = 'src/ScalingDemo.Api/ScalingDemo.Api.csproj'
+        WEB_DIR = 'src/ScalingDemo.Web'
+    
+        DOCKERHUB_NAMESPACE = 'jenkins-access-tokens'
+    
+        API_IMAGE = 'bmi-health-api'
+        WEB_IMAGE = 'bmi-health-web'
+    }
 
     stages {
         stage('Checkout') {
