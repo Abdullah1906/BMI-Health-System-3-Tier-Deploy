@@ -1,12 +1,13 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Restore first so this layer is cached until the .csproj changes.
-COPY ScalingDemo.Api.csproj .
-RUN dotnet restore
+# Copy the csproj file using its relative path from the root context
+COPY src/ScalingDemo.Api/ScalingDemo.Api.csproj src/ScalingDemo.Api/
+RUN dotnet restore src/ScalingDemo.Api/ScalingDemo.Api.csproj
 
+# Copy all source files
 COPY . .
-RUN dotnet publish ScalingDemo.Api.csproj \
+RUN dotnet publish src/ScalingDemo.Api/ScalingDemo.Api.csproj \
     -c Release \
     -o /app/publish \
     --no-restore
@@ -19,6 +20,5 @@ EXPOSE 8080
 
 COPY --from=build /app/publish .
 
-# The .NET 8 images ship a non-root 'app' user; port 8080 needs no privileges.
 USER $APP_UID
 ENTRYPOINT ["dotnet", "ScalingDemo.Api.dll"]
