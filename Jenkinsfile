@@ -1,7 +1,7 @@
 
 pipeline {
     agent {
-        label 'linux && docker && dotnet && angular'
+        label 'linux-agent'
     }
 
     options {
