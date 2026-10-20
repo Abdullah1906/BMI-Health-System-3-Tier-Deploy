@@ -21,7 +21,7 @@ pipeline {
         API_PROJECT = 'src/ScalingDemo.Api/ScalingDemo.Api.csproj'
         WEB_DIR = 'src/ScalingDemo.Web'
     
-        DOCKERHUB_NAMESPACE = 'jenkins-access-tokens'
+        DOCKERHUB_NAMESPACE = 'abdullah1438'
     
         API_IMAGE = 'bmi-health-api'
         WEB_IMAGE = 'bmi-health-web'
@@ -98,7 +98,8 @@ pipeline {
             steps {
                 sh '''
                     docker build \
-                        --tag "$API_IMAGE:$BUILD_NUMBER" \
+                        --tag "$DOCKERHUB_NAMESPACE/$API_IMAGE:$BUILD_NUMBER" \
+                        --tag "$DOCKERHUB_NAMESPACE/$API_IMAGE:latest" \
                         --file src/ScalingDemo.Api/Dockerfile \
                         .
                 '''
@@ -109,7 +110,8 @@ pipeline {
             steps {
                 sh '''
                     docker build \
-                        --tag "$WEB_IMAGE:$BUILD_NUMBER" \
+                        --tag "$DOCKERHUB_NAMESPACE/$WEB_IMAGE:$BUILD_NUMBER" \
+                        --tag "$DOCKERHUB_NAMESPACE/$WEB_IMAGE:latest" \
                         --file src/ScalingDemo.Web/Dockerfile \
                         src/ScalingDemo.Web
                 '''
@@ -119,12 +121,49 @@ pipeline {
         stage('Verify Images') {
             steps {
                 sh '''
-                    docker image inspect "$API_IMAGE:$BUILD_NUMBER"
-                    docker image inspect "$WEB_IMAGE:$BUILD_NUMBER"
+                    docker image inspect "$DOCKERHUB_NAMESPACE/$API_IMAGE:$BUILD_NUMBER"
+                    docker image inspect "$DOCKERHUB_NAMESPACE/$WEB_IMAGE:$BUILD_NUMBER"
 
-                    docker images "$API_IMAGE"
-                    docker images "$WEB_IMAGE"
+                    docker images "$DOCKERHUB_NAMESPACE/$API_IMAGE"
+                    docker images "$DOCKERHUB_NAMESPACE/$WEB_IMAGE"
                 '''
+            }
+        }
+    }
+
+   stage('Push Images to Docker Hub') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKERHUB_USER',
+                        passwordVariable: 'DOCKERHUB_TOKEN'
+                    )
+                ]) {
+                    sh '''
+                        set -eu
+                        set +x
+
+                        trap 'docker logout || true' EXIT
+
+                        printf '%s' "$DOCKERHUB_TOKEN" |
+                            docker login \
+                                --username "$DOCKERHUB_USER" \
+                                --password-stdin
+
+                        docker push \
+                            "$DOCKERHUB_NAMESPACE/$API_IMAGE:$BUILD_NUMBER"
+
+                        docker push \
+                            "$DOCKERHUB_NAMESPACE/$API_IMAGE:latest"
+
+                        docker push \
+                            "$DOCKERHUB_NAMESPACE/$WEB_IMAGE:$BUILD_NUMBER"
+
+                        docker push \
+                            "$DOCKERHUB_NAMESPACE/$WEB_IMAGE:latest"
+                    '''
+                }
             }
         }
     }
