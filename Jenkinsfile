@@ -1,4 +1,3 @@
-
 pipeline {
     agent {
         label 'linux-agent'
@@ -14,15 +13,8 @@ pipeline {
         API_PROJECT = 'src/ScalingDemo.Api/ScalingDemo.Api.csproj'
         WEB_DIR = 'src/ScalingDemo.Web'
 
-        API_IMAGE = 'bmi-health-api'
-        WEB_IMAGE = 'bmi-health-web'
-    }
-    environment {
-        API_PROJECT = 'src/ScalingDemo.Api/ScalingDemo.Api.csproj'
-        WEB_DIR = 'src/ScalingDemo.Web'
-    
         DOCKERHUB_NAMESPACE = 'abdullah1438'
-    
+
         API_IMAGE = 'bmi-health-api'
         WEB_IMAGE = 'bmi-health-web'
     }
@@ -129,9 +121,8 @@ pipeline {
                 '''
             }
         }
-    }
 
-   stage('Push Images to Docker Hub') {
+        stage('Push Images to Docker Hub') {
             steps {
                 withCredentials([
                     usernamePassword(
