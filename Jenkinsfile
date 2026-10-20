@@ -91,7 +91,7 @@ pipeline {
                     docker build \
                         --tag "$API_IMAGE:$BUILD_NUMBER" \
                         --file src/ScalingDemo.Api/Dockerfile \
-                        src/ScalingDemo.Api
+                        .
                 '''
             }
         }
